@@ -10,7 +10,7 @@ st.write(f"Today's Date: {date.today()}")
 
 # 2. Setup the Google Sheets Connection
 # Replace the URL below with your actual Google Sheet URL
-SHEET_URL = "https://docs.google.com/spreadsheets/d/https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C_qgYU0mrAeoHJ7Qs/edit?usp=sharing/edit"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C_qgYU0mrAeoHJ7Qs/edit"
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
