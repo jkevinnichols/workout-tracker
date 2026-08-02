@@ -15,17 +15,15 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
-    # This reads the data from your Google Sheet
-    return conn.read(spreadsheet=SHEET_URL, usecols=[0,1,2,3,4,5,6], ttl=0)
+    # Make sure 'Sheet1' matches the tab name at the bottom of your Google Sheet
+    return conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", usecols=[0,1,2,3,4,5,6], ttl=0)
 
 def save_data(new_entry):
-    # This adds the new row to your Google Sheet
     df = load_data()
-    # Create a DataFrame for the new entry
     new_df = pd.DataFrame([new_entry])
-    # Combine the existing data with the new entry
     df = pd.concat([df, new_df], ignore_index=True)
-    conn.update(spreadsheet=SHEET_URL, data=df)
+    # Adding the worksheet name here fixes the "UnsupportedOperationError"
+    conn.update(spreadsheet=SHEET_URL, worksheet="Sheet1", data=df)
 
 # 3. Creating the Form
 with st.form("workout_form"):
