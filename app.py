@@ -1,29 +1,25 @@
 import streamlit as st
 import pandas as pd
+import os
 from datetime import date
-from streamlit_gsheets import GSheetsConnection
 
 # 1. Page Setup
 st.set_page_config(page_title="My Workout Tracker", layout="centered")
 st.title("Workout Log")
 st.write(f"Today's Date: {date.today()}")
 
-# 2. Setup the Google Sheets Connection
-# Replace the URL below with your actual Google Sheet URL
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C_qgYU0mrAeoHJ7Qs/edit"
-
-conn = st.connection("gsheets", type=GSheetsConnection)
+DATA_FILE = "workout_log.csv"
 
 def load_data():
-    # Make sure 'Sheet1' matches the tab name at the bottom of your Google Sheet
-    return conn.read(spreadsheet=SHEET_URL, worksheet="Sheet1", usecols=[0,1,2,3,4,5,6], ttl=0)
+    if not os.path.exists(DATA_FILE):
+        return pd.DataFrame(columns=["Date", "Cycle Day", "Exercise", "Sets", "Reps", "Weight (lbs)", "Notes"])
+    return pd.read_csv(DATA_FILE)
 
 def save_data(new_entry):
     df = load_data()
     new_df = pd.DataFrame([new_entry])
     df = pd.concat([df, new_df], ignore_index=True)
-    # Adding the worksheet name here fixes the "UnsupportedOperationError"
-    conn.update(spreadsheet=SHEET_URL, worksheet="Sheet1", data=df)
+    df.to_csv(DATA_FILE, index=False)
 
 # 3. Creating the Form
 with st.form("workout_form"):
@@ -53,7 +49,7 @@ if submitted:
         "Notes": notes
     }
     save_data(new_workout)
-    st.success("Workout saved to Google Sheets!")
+    st.success("Workout logged successfully!")
 
 st.divider()
 st.subheader("Recent Workouts")
