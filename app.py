@@ -1,58 +1,53 @@
 import streamlit as st
-import pandas as pd
-import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from datetime import date
+import json
 
-# 1. Page Setup
-st.set_page_config(page_title="My Workout Tracker", layout="centered")
-st.title("Workout Log")
-st.write(f"Today's Date: {date.today()}")
+st.title("My Workout Tracker")
 
-DATA_FILE = "workout_log.csv"
+# 1. Authenticate and connect to Google Sheets
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return pd.DataFrame(columns=["Date", "Cycle Day", "Exercise", "Sets", "Reps", "Weight (lbs)", "Notes"])
-    return pd.read_csv(DATA_FILE)
+# --- CLOUD VS LOCAL AUTHENTICATION ---
+if "gcp_service_account_json" in st.secrets:
+    # We are running in the cloud! Use the Streamlit Secret vault.
+    creds_dict = json.loads(st.secrets["gcp_service_account_json"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+else:
+    # We are running locally! Use the credentials file on the computer.
+    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
 
-def save_data(new_entry):
-    df = load_data()
-    new_df = pd.DataFrame([new_entry])
-    df = pd.concat([df, new_df], ignore_index=True)
-    df.to_csv(DATA_FILE, index=False)
+client = gspread.authorize(creds)
 
-# 3. Creating the Form
-with st.form("workout_form"):
-    cycle_day = st.selectbox("Cycle Day", ["Push", "Leg", "Pull", "Active Recovery"])
-    routines = {
-        "Push": ["Chest Press", "Overhead Press", "Tricep Extensions", "Lateral Raises"],
-        "Leg": ["Goblet Squats", "RDLs", "Walking Lunges", "Calf Raises"],
-        "Pull": ["Dumbbell Rows", "Dumbbell Pullovers", "Bicep Curls"],
-        "Active Recovery": ["Yoga"]
-    }
-    exercise = st.selectbox("Exercise", routines[cycle_day])
-    col1, col2, col3 = st.columns(3)
-    with col1: sets = st.number_input("Sets", min_value=1, step=1)
-    with col2: reps = st.number_input("Reps", min_value=1, step=1)
-    with col3: weight = st.number_input("Weight (lbs)", min_value=0, step=5)
-    notes = st.text_area("Performance Notes")
-    submitted = st.form_submit_button("Log Workout")
+# Make sure this matches exactly what worked for you earlier
+sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C_qgYU0mrAeoHJ7Qs/edit?gid=0#gid=0").sheet1
 
-if submitted:
-    new_workout = {
-        "Date": str(date.today()),
-        "Cycle Day": cycle_day,
-        "Exercise": exercise,
-        "Sets": sets,
-        "Reps": reps,
-        "Weight (lbs)": weight,
-        "Notes": notes
-    }
-    save_data(new_workout)
-    st.success("Workout logged successfully!")
+# 2. Setup exercise lists
+push_exercises = ["Bench Press", "Incline Dumbbell Press", "Tricep Extensions"]
+leg_exercises = ["Squats", "Leg Press", "Calf Raises"]
+pull_exercises = ["Deadlifts", "Pull-ups", "Bicep Curls"]
+recovery_exercises = ["Yoga with Adriene", "Light Stretching", "Brisk Walk"]
 
-st.divider()
-st.subheader("Recent Workouts")
-df_logs = load_data()
-if not df_logs.empty:
-    st.dataframe(df_logs.sort_index(ascending=False), use_container_width=True)
+# 3. Create the app interface
+st.header("Log a New Session")
+
+workout_date = st.date_input("Date", date.today())
+workout_type = st.selectbox("Workout Type", ["Push", "Leg", "Pull", "Active Recovery"])
+
+if workout_type == "Push":
+    exercise = st.selectbox("Exercise", push_exercises)
+elif workout_type == "Leg":
+    exercise = st.selectbox("Exercise", leg_exercises)
+elif workout_type == "Pull":
+    exercise = st.selectbox("Exercise", pull_exercises)
+elif workout_type == "Active Recovery":
+    exercise = st.selectbox("Exercise", recovery_exercises)
+
+notes = st.text_area("Notes (Weight, Reps, etc.)")
+
+# 4. Save the data when the button is clicked
+if st.button("Save to Sheet"):
+    row_to_insert = [str(workout_date), workout_type, exercise, notes] 
+    sheet.append_row(row_to_insert)
+    st.success("Workout saved to your Google Sheet!")
