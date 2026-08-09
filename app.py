@@ -44,10 +44,12 @@ elif workout_type == "Pull":
 elif workout_type == "Active Recovery":
     exercise = st.selectbox("Exercise", recovery_exercises)
 
-notes = st.text_area("Notes (Weight, Reps, etc.)")
+sets = st.selectbox("Sets", [1, 2, 3, 4, 5, 6])
+reps = st.selectbox("Reps", [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20])
+weight = st.number_input("Weight (lbs)", min_value=0.0, step=2.5)
 
 # 4. Save the data when the button is clicked
 if st.button("Save to Sheet"):
-    row_to_insert = [str(workout_date), workout_type, exercise, notes] 
+    row_to_insert = [str(workout_date), workout_type, exercise, sets, reps, weight] 
     sheet.append_row(row_to_insert)
     st.success("Workout saved to your Google Sheet!")
