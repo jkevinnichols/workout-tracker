@@ -24,9 +24,9 @@ client = gspread.authorize(creds)
 sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1PQnvN6k0wJkti8RDQG_EamBAC6C_qgYU0mrAeoHJ7Qs/edit?gid=0#gid=0").sheet1
 
 # 2. Setup exercise lists
-push_exercises = ["Bench Press", "Incline Dumbbell Press", "Tricep Extensions"]
-leg_exercises = ["Squats", "Leg Press", "Calf Raises"]
-pull_exercises = ["Deadlifts", "Pull-ups", "Bicep Curls"]
+push_exercises = ["Incline Chest Press", "Shoulder Press", "Tricep Extensions", "Lateral Raises"]
+leg_exercises = ["Goblet Squats", "RDLs", "Walking Lunges", "Calf Raises"]
+pull_exercises = ["Rows", "Pull Overs", "Bicep Curls"]
 recovery_exercises = ["Yoga with Adriene", "Light Stretching", "Brisk Walk"]
 
 # 3. Create the app interface
