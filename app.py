@@ -183,7 +183,7 @@ with tab_history:
             st.caption("Pick a specific exercise above to see its progress chart.")
 
         st.subheader("All Logged Entries")
-        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        st.dataframe(filtered_df.iloc[::-1], use_container_width=True, hide_index=True)
 
         # ---------------- Edit / Delete ----------------
         st.subheader("Edit or Delete an Entry")
@@ -193,7 +193,7 @@ with tab_history:
         df_display = df.reset_index(drop=True)
         df_display["Sheet Row"] = df_display.index + 2
 
-        row_options = df_display.apply(
+        row_options = df_display.iloc[::-1].apply(
             lambda r: f"Row {r['Sheet Row']}: {r['Date']} | {r['Cycle Day']} | {r['Exercise']} | Set {r['Set']}",
             axis=1,
         ).tolist()
